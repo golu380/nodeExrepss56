@@ -57,58 +57,124 @@ const registerUser = async (req, res) => {
   }
 }
 
-const loginUser = async(req,res)=>{
-    console.log(req.body)
-    try{
-        const {email, password} = req.body;
+// const loginUser = async(req,res)=>{
+//     console.log(req.body)
+//     try{
+//         const {email, password} = req.body;
 
-        if(!email || !password){
-            return res.status(400).json({
-                success:false,
-                message:"Email and password are required"
-            })
-        }
-        const user = await User.findOne({
-            email:email.toLowerCase()
-        })
-        if(!user){
-            return res.status(401).json({
-                success:false,
-                message:"User not found/Invalid credentials"
+//         if(!email || !password){
+//             return res.status(400).json({
+//                 success:false,
+//                 message:"Email and password are required"
+//             })
+//         }
+//         const user = await User.findOne({
+//             email:email.toLowerCase()
+//         })
+//         if(!user){
+//             return res.status(401).json({
+//                 success:false,
+//                 message:"User not found/Invalid credentials"
 
-            })
-        }
+//             })
+//         }
 
-        const isMatch = await bcrypt.compare(password,user.password);
-        if(!isMatch){
-            return res.status(401).json({
-                success:false,
-                message:"Invalid credentials"
-            })
-        }
-        const token = jwt.sign(
-            {id: user._id,email:user.email},
-            process.env.JWT_SECRET || "raunak_super_secret_key",
-            {expiresIn:"1h"}
-        )
+//         const isMatch = await bcrypt.compare(password,user.password);
+//         if(!isMatch){
+//             return res.status(401).json({
+//                 success:false,
+//                 message:"Invalid credentials"
+//             })
+//         }
+//         const token = jwt.sign(
+//             {id: user._id,email:user.email},
+//             process.env.JWT_SECRET || "raunak_super_secret_key",
+//             {expiresIn:"1h"}
+//         )
 
-        return res.status(200).json({
-            success: true,
-            message:"Login successful",
-            token,
-            user:{
-                id:user._id,
-                name:user.name,
-                email:user.email
-            }
-        })
+//         return res.status(200).json({
+//             success: true,
+//             message:"Login successful",
+//             token,
+//             user:{
+//                 id:user._id,
+//                 name:user.name,
+//                 email:user.email
+//             }
+//         })
 
-    }catch(err){
-        console.log(err)
+//     }catch(err){
+//         console.log(err)
+//     }
+
+// }
+
+const loginUserr = async(req,res)=>{
+
+  console.log(req.body)
+
+  try{
+
+    const {email, password} = req.body;
+    console.log(email)
+    console.log(password)
+
+    if(!email || !password){
+
+      return res.status(400).json({
+        success:false,
+        message: 'both email and password required'
+      })
+
     }
 
+    const user = await User.findOne({email:email.toLowerCase()})
+    console.log(user)
+    if(!user){
+      return res.status(401).json({
+        success:false,
+        message:'Invalid credentials!'
+      })
+    }
+
+    const isMatch = await bcrypt.compare(password,user.password)
+
+    if(!isMatch){
+        return res.status(401).json({
+        success:false,
+        message:'Invalid credentials!'
+      })
+    }
+    console.log(process.env.JWT_SECRET)
+    const token = jwt.sign(
+    {id:user._id,email:user.email},
+    process.env.JWT_SECRET,
+    {expiresIn:"1h"}
+    )
+
+    return res.status(200).json({
+      success:true,
+      message:'login successfull',
+       token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    })
+
+
+  }catch(err){
+    console.error("Login Error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    })
+  }
 }
 module.exports = {
     registerUser,
-    loginUser
+   
+    loginUserr
+
 }
