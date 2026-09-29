@@ -172,9 +172,12 @@ const loginUserr = async(req,res)=>{
     })
   }
 }
+const getProfile = async(req,res)=>{
+  res.send("hi from the profile")
+}
 module.exports = {
     registerUser,
-   
+   getProfile,
     loginUserr
 
 }
