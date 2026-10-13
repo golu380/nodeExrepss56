@@ -12,17 +12,11 @@ app.use('/auth',authRoutes)
 
 
 
-
-const PORT = process.env.PORT
 const dburl = process.env.MONGO_URI
 
-console.log(PORT)
 console.log(dburl)
 
-app.get('/',(req,res)=>{
-    console.log('Hi from the server')
-    res.send('Hi from the server')
-})
+
 
 moongoose.connect(dburl).then(()=>{
     console.log('Database connected successfully')
@@ -30,6 +24,16 @@ moongoose.connect(dburl).then(()=>{
     console.log('Error while connecting to database', err)
 })
 
-app.listen(PORT, ()=>{
-    console.log(`Server is running on port ${PORT}`)
-})
+// app.listen(PORT, ()=>{
+//     console.log(`Server is running on port ${PORT}`)
+// })
+
+const PORT = process.env.PORT || 8080; 
+ 
+app.listen(PORT, () => { 
+ 
+    console.log( 
+        `Server running on http://localhost:${PORT}` 
+    );
+
+});
