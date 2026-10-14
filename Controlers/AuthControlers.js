@@ -2,7 +2,8 @@ const Users = require("../Models/Users")
 const bcrypt= require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const crypto = require("crypto");
-const sendEmail = require("../utils/sendEmail")
+const sendEmail = require("../utils/sendEmail");
+const { generateRefreshToken ,generateAcessToken} = require("../utils/generateToken");
 
 // const registerUser = async (req, res) => {
 //   try {
@@ -252,6 +253,7 @@ if(!user){
   })
 }
 
+
 user.isVerified = true;
 user.verificationToken = undefined;
 
@@ -271,10 +273,67 @@ res.json({
 
 
 }
+
+const loginUser = async(req,res) =>{
+  console.log(req.body)
+
+  try{
+
+    const {email,password} = req.body;
+    const user = await Users.findOne({email});
+
+    if(!user){
+      return res.status(401).json({
+        message:"invalid email or password"
+      })
+    }
+
+    const passMatch = await bcrypt.compare(password, user.password);
+
+       if(!passMatch){
+      return res.status(401).json({
+        message:"invalid email or password"
+      })
+    }
+
+    if(!user.isVerified){
+      return res.status(403).json({
+        message:"Please verify your email first"
+      })
+    }
+
+    const accessToken = generateAcessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    await user.save()
+
+    res.status(201).json({
+      message:"Login successfull",
+      accessToken,
+      refreshToken,
+
+
+      user:{
+        id: user._id,
+        name:user.name,
+        email:user.email,
+        role:user.role
+      }
+    })
+
+
+
+  }catch(err){
+       res.status(500).json({ 
+            message: err.message 
+        }); 
+  }
+}
 module.exports = {
     registerUser,
-    verifyEmail
+    verifyEmail,
   //  getProfile,
-    // loginUserr
+    loginUser
 
 }
