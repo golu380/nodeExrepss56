@@ -330,10 +330,76 @@ const loginUser = async(req,res) =>{
         }); 
   }
 }
+
+const forgotPassword =  async(req,res) =>{
+  console.log("hi from forgot password")
+
+  try{
+    const {email} = req.body;
+    const user = await Users.findOne({email});
+
+    if(!user){
+      return res.json({
+        message: "if the email exits , resent link has been set"
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetPasswordToken = crypto.createHash("sha256")
+                              .update(resetToken)
+                              .digest("hex");
+
+    
+    user.resetPasswordExpire = Date.now() + 15* 60 *1000;
+
+    await user.save();
+
+    const resetURL = 
+            `http://localhost:8080/auth/reset-password/${resetToken}`; 
+
+    await sendEmail({
+      to:user.email,
+      subject:"password reset request",
+
+      html:`
+      <h2> Password Reset</h2>
+
+      <p> 
+                    You requested to reset your password. 
+                </p> 
+ 
+                <p> 
+                    This link will expire in 15 minutes. 
+                </p> 
+ 
+                <a href="${resetURL}"> 
+                    Reset Password 
+                </a>
+      `
+    })
+
+
+res.json({
+  message:"if the email exsts , a reset link has been set"
+})
+
+
+
+  }catch(err){
+    console.log(err)
+
+    res.status(500).json({
+      message:err.message
+    })
+  }
+
+
+}
 module.exports = {
     registerUser,
     verifyEmail,
   //  getProfile,
-    loginUser
+    loginUser,
+    forgotPassword
 
 }
